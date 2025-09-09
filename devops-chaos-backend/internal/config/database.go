@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -12,12 +13,16 @@ import (
 var DB *gorm.DB
 
 func ConnectDatabase() {
-	host := getEnv("DB_HOST", "localhost")
-	port := getEnv("DB_PORT", "5432")
-	user := getEnv("DB_USER", "postgres")
-	password := getEnv("DB_PASSWORD", "password")
-	dbname := getEnv("DB_NAME", "devops_chaos")
-	sslmode := getEnv("DB_SSLMODE", "disable")
+	err := godotenv.Load()
+	if err != nil {
+		log.Println("No .env file found")
+	}
+	host := os.Getenv("DB_HOST")
+	port := os.Getenv("DB_PORT")
+	user := os.Getenv("DB_USER")
+	password := os.Getenv("DB_PASSWORD")
+	dbname := os.Getenv("DB_NAME")
+	sslmode := os.Getenv("DB_SSLMODE")
 
 	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
 		host, port, user, password, dbname, sslmode)
