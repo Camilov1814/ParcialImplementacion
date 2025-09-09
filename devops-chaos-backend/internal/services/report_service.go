@@ -1,6 +1,7 @@
 package services
 
 import (
+	"devops-chaos-backend/internal/config"
 	"devops-chaos-backend/internal/dao"
 	"devops-chaos-backend/internal/dto"
 	"devops-chaos-backend/internal/models"
@@ -298,7 +299,7 @@ func (s *ReportService) getReportsByTypeAndStatus(reportType, status string, pag
 	var reports []models.Report
 	var total int64
 
-	query := s.reportDAO.reportDAO.DB.Model(&models.Report{}).Where("type = ? AND status = ?", reportType, status)
+	query := config.DB.Model(&models.Report{}).Where("type = ? AND status = ?", reportType, status)
 
 	query.Count(&total)
 
