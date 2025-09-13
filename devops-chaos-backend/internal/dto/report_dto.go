@@ -23,13 +23,14 @@ type ReportResponse struct {
 
 // Item para lista de reportes
 type ReportListItem struct {
-	ID        uint      `json:"id"`
-	Title     string    `json:"title"`
-	Type      string    `json:"type"`
-	Status    string    `json:"status"`
-	AuthorID  *uint     `json:"author_id"`
-	Author    string    `json:"author"`
-	CreatedAt time.Time `json:"created_at"`
+	ID          uint      `json:"id"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	Type        string    `json:"type"`
+	Status      string    `json:"status"`
+	AuthorID    *uint     `json:"author_id"`
+	Author      string    `json:"author"`
+	CreatedAt   time.Time `json:"created_at"`
 }
 
 // Request para actualizar reporte

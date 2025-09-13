@@ -127,13 +127,14 @@ func (s *ReportService) GetReports(page, limit int, reportType, status string, u
 		}
 
 		reportItems[i] = dto.ReportListItem{
-			ID:        report.ID,
-			Title:     report.Title,
-			Type:      report.Type,
-			Status:    report.Status,
-			AuthorID:  report.AuthorID,
-			Author:    authorName,
-			CreatedAt: report.CreatedAt,
+			ID:          report.ID,
+			Title:       report.Title,
+			Description: report.Description,
+			Type:        report.Type,
+			Status:      report.Status,
+			AuthorID:    report.AuthorID,
+			Author:      authorName,
+			CreatedAt:   report.CreatedAt,
 		}
 	}
 
@@ -216,13 +217,14 @@ func (s *ReportService) GetRecentReports(limit int, userRole string) ([]dto.Repo
 		}
 
 		reportItems[i] = dto.ReportListItem{
-			ID:        report.ID,
-			Title:     report.Title,
-			Type:      report.Type,
-			Status:    report.Status,
-			AuthorID:  report.AuthorID,
-			Author:    authorName,
-			CreatedAt: report.CreatedAt,
+			ID:          report.ID,
+			Title:       report.Title,
+			Description: report.Description,
+			Type:        report.Type,
+			Status:      report.Status,
+			AuthorID:    report.AuthorID,
+			Author:      authorName,
+			CreatedAt:   report.CreatedAt,
 		}
 	}
 
