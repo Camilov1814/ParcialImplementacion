@@ -1,5 +1,7 @@
 package dto
 
+import "time"
+
 // Response del dashboard de Andrei
 type AndreiDashboardResponse struct {
 	WelcomeMessage string                 `json:"welcome_message"`
@@ -7,6 +9,7 @@ type AndreiDashboardResponse struct {
 	RecentReports  []ReportListItem       `json:"recent_reports"`
 	TopDaemons     []TopPerformerResponse `json:"top_daemons"`
 	RecentActivity []ActivityItem         `json:"recent_activity"`
+	AllCaptures    []CaptureDetailItem    `json:"all_captures"`
 }
 
 // Response del dashboard de Daemon
@@ -17,6 +20,7 @@ type DaemonDashboardResponse struct {
 	Leaderboard       []RankingItem        `json:"leaderboard"`
 	RecentCaos        []ChaosActivityItem  `json:"recent_chaos"`
 	ActivePunishments []PunishmentListItem `json:"active_punishments"`
+	RecentCaptures    []CaptureListItem    `json:"recent_captures"`
 }
 
 // Estadísticas del sistema
@@ -66,4 +70,27 @@ type ChaosActivityItem struct {
 	Type        string `json:"type"`
 	Timestamp   string `json:"timestamp"`
 	Points      int    `json:"points"`
+}
+
+// Item de captura para el dashboard
+type CaptureListItem struct {
+	ID          uint      `json:"id"`
+	TargetName  string    `json:"target_name"`
+	CaptureDate time.Time `json:"capture_date"`
+	Status      string    `json:"status"`
+	Points      int       `json:"points"`
+	Difficulty  string    `json:"difficulty"`
+	Method      string    `json:"method"`
+}
+
+// Item de captura detallado para Andrei
+type CaptureDetailItem struct {
+	ID          uint      `json:"id"`
+	DaemonName  string    `json:"daemon_name"`
+	TargetName  string    `json:"target_name"`
+	CaptureDate time.Time `json:"capture_date"`
+	Status      string    `json:"status"`
+	Points      int       `json:"points"`
+	Difficulty  string    `json:"difficulty"`
+	Method      string    `json:"method"`
 }

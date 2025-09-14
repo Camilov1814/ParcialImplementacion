@@ -13,6 +13,7 @@ type DashboardService struct {
 	reportDAO     *dao.ReportDAO
 	punishmentDAO *dao.PunishmentDAO
 	statisticDAO  *dao.StatisticDAO
+	captureDAO    *dao.CaptureDAO
 }
 
 func NewDashboardService() *DashboardService {
@@ -21,6 +22,7 @@ func NewDashboardService() *DashboardService {
 		reportDAO:     dao.NewReportDAO(),
 		punishmentDAO: dao.NewPunishmentDAO(),
 		statisticDAO:  dao.NewStatisticDAO(),
+		captureDAO:    dao.NewCaptureDAO(),
 	}
 }
 
@@ -75,12 +77,33 @@ func (s *DashboardService) GetAndreiDashboard() (*dto.AndreiDashboardResponse, e
 	// Actividad reciente (simplificada)
 	recentActivity := s.generateRecentActivity()
 
+	// Todas las capturas (para que Andrei vea quién capturó a cada admin)
+	allCaptures, err := s.captureDAO.FindAll()
+	if err != nil {
+		return nil, err
+	}
+
+	captureDetailItems := make([]dto.CaptureDetailItem, len(allCaptures))
+	for i, capture := range allCaptures {
+		captureDetailItems[i] = dto.CaptureDetailItem{
+			ID:          capture.ID,
+			DaemonName:  capture.Daemon.Username,
+			TargetName:  capture.Target.Username,
+			CaptureDate: capture.CaptureDate,
+			Status:      capture.Status,
+			Points:      capture.Points,
+			Difficulty:  capture.Difficulty,
+			Method:      capture.Method,
+		}
+	}
+
 	response := &dto.AndreiDashboardResponse{
 		WelcomeMessage: "Welcome back, Andrei. The chaos continues...",
 		SystemStats:    *systemStats,
 		RecentReports:  reportItems,
 		TopDaemons:     topPerformers,
 		RecentActivity: recentActivity,
+		AllCaptures:    captureDetailItems,
 	}
 
 	return response, nil
@@ -139,6 +162,25 @@ func (s *DashboardService) GetDaemonDashboard(userID uint) (*dto.DaemonDashboard
 		}
 	}
 
+	// Capturas recientes del daemon
+	recentCaptures, err := s.captureDAO.FindByDaemonID(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	captureItems := make([]dto.CaptureListItem, len(recentCaptures))
+	for i, capture := range recentCaptures {
+		captureItems[i] = dto.CaptureListItem{
+			ID:          capture.ID,
+			TargetName:  capture.Target.Username,
+			CaptureDate: capture.CaptureDate,
+			Status:      capture.Status,
+			Points:      capture.Points,
+			Difficulty:  capture.Difficulty,
+			Method:      capture.Method,
+		}
+	}
+
 	// Misiones activas (hardcoded para el ejemplo)
 	activeMissions := s.generateActiveMissions()
 
@@ -152,6 +194,7 @@ func (s *DashboardService) GetDaemonDashboard(userID uint) (*dto.DaemonDashboard
 		Leaderboard:       leaderboard,
 		RecentCaos:        recentChaos,
 		ActivePunishments: punishmentItems,
+		RecentCaptures:    captureItems,
 	}
 
 	return response, nil

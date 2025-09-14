@@ -198,3 +198,78 @@ func (uc *UserController) CaptureNetworkAdmin(c *gin.Context) {
 		PointsGiven: 10,
 	})
 }
+
+// GET /users/:id/captures
+func (uc *UserController) GetDaemonCaptures(c *gin.Context) {
+	idParam := c.Param("id")
+	daemonID, err := strconv.ParseUint(idParam, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
+			Success: false,
+			Message: "Invalid daemon ID",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	currentUserID, _ := c.Get("userID")
+	currentUserRole, _ := c.Get("userRole")
+
+	captures, err := uc.userService.GetDaemonCaptures(uint(daemonID), currentUserRole.(string), currentUserID.(uint))
+	if err != nil {
+		c.JSON(http.StatusForbidden, dto.ErrorResponse{
+			Success: false,
+			Message: "Access denied",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, dto.ApiResponse{
+		Success: true,
+		Message: "Captures retrieved successfully",
+		Data:    captures,
+	})
+}
+
+// GET /captures/all
+func (uc *UserController) GetAllCaptures(c *gin.Context) {
+	currentUserRole, _ := c.Get("userRole")
+
+	captures, err := uc.userService.GetAllCaptures(currentUserRole.(string))
+	if err != nil {
+		c.JSON(http.StatusForbidden, dto.ErrorResponse{
+			Success: false,
+			Message: "Access denied",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, dto.ApiResponse{
+		Success: true,
+		Message: "All captures retrieved successfully",
+		Data:    captures,
+	})
+}
+
+// GET /network-admins/capture
+func (uc *UserController) GetNetworkAdminsForCapture(c *gin.Context) {
+	currentUserRole, _ := c.Get("userRole")
+
+	admins, err := uc.userService.GetNetworkAdminsForCapture(currentUserRole.(string))
+	if err != nil {
+		c.JSON(http.StatusForbidden, dto.ErrorResponse{
+			Success: false,
+			Message: "Access denied",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, dto.ApiResponse{
+		Success: true,
+		Message: "Network admins retrieved successfully",
+		Data:    admins,
+	})
+}

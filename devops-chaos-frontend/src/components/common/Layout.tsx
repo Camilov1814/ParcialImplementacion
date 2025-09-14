@@ -52,7 +52,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     }
   };
 
-  const config = roleConfig[user.role];
+  const config = roleConfig[user.role as keyof typeof roleConfig];
 
   return (
     <div className="min-h-screen flex">
@@ -69,7 +69,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
         <nav className="sidebar-nav">
           <ul className="space-y-2">
-            {config.menuItems.map((item, index) => (
+            {config.menuItems.map((item: any, index: number) => (
               <li key={index}>
                 <button
                   onClick={() => navigate(item.path)}

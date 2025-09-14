@@ -32,6 +32,7 @@ func main() {
 		&models.Report{},
 		&models.Punishment{},
 		&models.Statistic{},
+		&models.Capture{},
 	)
 	if err != nil {
 		log.Fatal("Failed to migrate database:", err)
@@ -96,8 +97,18 @@ func main() {
 		users.DELETE("/:id", middleware.AndreiOnlyMiddleware(), userController.DeleteUser)
 		users.GET("/stats", middleware.AndreiOnlyMiddleware(), userController.GetUserStats)
 		users.POST("/:id/capture", middleware.DaemonOnlyMiddleware(), userController.CaptureNetworkAdmin)
+		users.GET("/:id/captures", middleware.AndreiAndDaemonMiddleware(), userController.GetDaemonCaptures)
 		users.GET("/:id/punishments/active", punishmentController.GetActivePunishments)
 	}
+
+	// Capture routes
+	captures := api.Group("/captures")
+	{
+		captures.GET("/all", middleware.AndreiOnlyMiddleware(), userController.GetAllCaptures)
+	}
+
+	// Network Admin capture endpoint
+	api.GET("/network-admins/capture", middleware.DaemonOnlyMiddleware(), userController.GetNetworkAdminsForCapture)
 
 	// Report routes
 	reports := api.Group("/reports")
@@ -156,6 +167,8 @@ func main() {
 	log.Printf("  POST /api/auth/login")
 	log.Printf("  GET  /api/auth/me")
 	log.Printf("  GET  /api/users")
+	log.Printf("  POST /api/users/:id/capture")
+	log.Printf("  GET  /api/network-admins/capture")
 	log.Printf("  GET  /api/reports")
 	log.Printf("  GET  /api/dashboard/andrei")
 	log.Printf("  GET  /api/dashboard/daemon")

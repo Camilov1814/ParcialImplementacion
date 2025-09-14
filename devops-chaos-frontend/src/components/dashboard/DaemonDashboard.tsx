@@ -1,28 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiService } from '../../services/api';
-import type { DaemonStats, LeaderboardEntry, Punishment } from '../../types';
+import type { DaemonStats, LeaderboardEntry, Punishment, Capture, DaemonDashboardResponse } from '../../types';
 
 const DaemonDashboard: React.FC = () => {
   const navigate = useNavigate();
   const [stats, setStats] = useState<DaemonStats | null>(null);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [punishments, setPunishments] = useState<Punishment[]>([]);
+  const [captures, setCaptures] = useState<Capture[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [daemonData, leaderboardData, punishmentsData] = await Promise.all([
-          apiService.getDaemonDashboard(),
-          apiService.getLeaderboard(),
-          apiService.getPunishments()
-        ]);
-        
-        setStats(daemonData);
-        setLeaderboard(leaderboardData);
-        setPunishments(punishmentsData);
+        const daemonData: DaemonDashboardResponse = await apiService.getDaemonDashboard();
+
+        setStats(daemonData.user_stats);
+        setLeaderboard(daemonData.leaderboard || []);
+        setPunishments(daemonData.active_punishments || []);
+        setCaptures(daemonData.recent_captures || []);
       } catch (err: any) {
         setError('Failed to load daemon data');
         console.error('Daemon dashboard error:', err);
@@ -72,11 +70,11 @@ const DaemonDashboard: React.FC = () => {
       {stats && (
         <div className="stats-grid">
           <div className="stat-card">
-            <span className="stat-number text-cyan">{stats.captures}</span>
+            <span className="stat-number text-cyan">{stats.captures_count}</span>
             <span className="stat-label">Network Admins Captured</span>
           </div>
           <div className="stat-card">
-            <span className="stat-number">{stats.reports}</span>
+            <span className="stat-number">{stats.reports_count}</span>
             <span className="stat-label">Intel Reports Filed</span>
           </div>
           <div className="stat-card">
@@ -113,7 +111,7 @@ const DaemonDashboard: React.FC = () => {
                   </div>
                   <div className="text-right">
                     <div className="text-primary font-bold text-sm">{daemon.points}</div>
-                    <div className="text-muted text-xs">{daemon.captures} captures</div>
+                    <div className="text-muted text-xs">{daemon.captures_count} captures</div>
                   </div>
                 </div>
               ))}
@@ -148,6 +146,49 @@ const DaemonDashboard: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {captures.length > 0 && (
+        <div className="card mt-6">
+          <h2 className="text-danger mb-4">👤 MY RECENT CAPTURES</h2>
+          <div className="space-y-3">
+            {captures.map((capture) => (
+              <div key={capture.id} className="p-3 bg-red-900 bg-opacity-20 rounded border border-red-500">
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <div className="text-danger font-bold text-lg">{capture.target_name}</div>
+                    <div className="text-muted text-sm">
+                      Captured on {new Date(capture.capture_date).toLocaleDateString()}
+                    </div>
+                    <div className="flex items-center space-x-2 mt-2">
+                      <span className={`text-xs px-2 py-1 rounded ${
+                        capture.difficulty === 'hard' ? 'bg-red-900 text-red-300' :
+                        capture.difficulty === 'medium' ? 'bg-yellow-900 text-yellow-300' :
+                        'bg-green-900 text-green-300'
+                      }`}>
+                        {capture.difficulty?.toUpperCase()}
+                      </span>
+                      <span className="text-xs px-2 py-1 rounded bg-blue-900 text-blue-300">
+                        {capture.method}
+                      </span>
+                      <span className={`text-xs px-2 py-1 rounded ${
+                        capture.status === 'captured' ? 'bg-red-900 text-red-300' :
+                        capture.status === 'released' ? 'bg-yellow-900 text-yellow-300' :
+                        'bg-gray-900 text-gray-300'
+                      }`}>
+                        {capture.status?.toUpperCase()}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-cyan font-bold">+{capture.points}</div>
+                    <div className="text-muted text-xs">points</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {activePunishments.length > 0 && (
         <div className="card card-danger mt-6">

@@ -18,82 +18,13 @@ const CaptureNetworkAdmin: React.FC = () => {
   const fetchNetworkAdmins = async () => {
     try {
       const admins = await apiService.getNetworkAdminsForCapture();
-      console.log('All admins received:', admins);
-      
-      // If no admins received (empty array due to access restrictions), use mock targets
-      if (!admins || admins.length === 0) {
-        console.warn('No admins received from API, using mock targets for daemon interface');
-        const mockTargets: User[] = [
-          {
-            id: 1001,
-            username: 'admin_alpha',
-            name: 'Network Administrator Alpha',
-            email: 'alpha@resistance.net',
-            role: 'network_admin',
-            status: 'active'
-          },
-          {
-            id: 1002,
-            username: 'admin_beta',
-            name: 'Network Administrator Beta', 
-            email: 'beta@resistance.net',
-            role: 'network_admin',
-            status: 'active'
-          },
-          {
-            id: 1003,
-            username: 'admin_gamma',
-            name: 'Network Administrator Gamma',
-            email: 'gamma@resistance.net',
-            role: 'network_admin', 
-            status: 'active'
-          }
-        ];
-        setNetworkAdmins(mockTargets);
-        return;
-      }
-      
-      // Filter only network admins that haven't been captured (status should be 'active')
-      const availableAdmins = admins.filter(admin => 
-        admin.role === 'network_admin' && admin.status !== 'captured'
-      );
-      console.log('Available admins after filter:', availableAdmins);
-      setNetworkAdmins(availableAdmins);
+      console.log('Network admins received:', admins);
+
+      // Use real network admins from the database
+      setNetworkAdmins(admins);
     } catch (err: any) {
-      // If we get a 403 error, it means daemons don't have access to the user list
-      // For now, we'll create some mock targets for demonstration
-      if (err.message.includes('Access denied') || err.message.includes('403')) {
-        console.warn('Creating mock targets for daemon interface');
-        const mockTargets: User[] = [
-          {
-            id: 1001,
-            username: 'admin_alpha',
-            name: 'Network Administrator Alpha',
-            email: 'alpha@resistance.net',
-            role: 'network_admin',
-            status: 'active'
-          },
-          {
-            id: 1002,
-            username: 'admin_beta',
-            name: 'Network Administrator Beta', 
-            email: 'beta@resistance.net',
-            role: 'network_admin',
-            status: 'active'
-          },
-          {
-            id: 1003,
-            username: 'admin_gamma',
-            name: 'Network Administrator Gamma',
-            email: 'gamma@resistance.net',
-            role: 'network_admin', 
-            status: 'active'
-          }
-        ];
-        setNetworkAdmins(mockTargets);
-      } else {
-        setError(err.message || 'Failed to load available targets');
-      }
+      console.error('Failed to load network admins:', err);
+      setError(err.message || 'Failed to load available targets');
     } finally {
       setIsLoading(false);
     }
@@ -134,25 +65,11 @@ const CaptureNetworkAdmin: React.FC = () => {
       setCaptureMessage('Finalizing capture...');
       
       // Actually perform the capture
-      try {
-        await apiService.captureNetworkAdmin(targetId);
-        setCaptureMessage('TARGET CAPTURED SUCCESSFULLY!');
-      } catch (captureErr: any) {
-        // If this is a mock target (ID > 1000), simulate successful capture
-        if (targetId >= 1000) {
-          console.warn('Mock target captured successfully');
-          setCaptureMessage('MOCK TARGET CAPTURED SUCCESSFULLY!');
-          // Remove the captured target from the list
-          setNetworkAdmins(prev => prev.filter(admin => admin.id !== targetId));
-        } else {
-          throw captureErr;
-        }
-      }
-      
-      // Refresh the list only if it's not a mock target
-      if (targetId < 1000) {
-        await fetchNetworkAdmins();
-      }
+      await apiService.captureNetworkAdmin(targetId);
+      setCaptureMessage('TARGET CAPTURED SUCCESSFULLY!');
+
+      // Refresh the list to remove captured admins
+      await fetchNetworkAdmins();
       setSelectedTarget(null);
       
       setTimeout(() => {

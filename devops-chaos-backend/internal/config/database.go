@@ -36,6 +36,10 @@ func ConnectDatabase() {
 	log.Println("Database connected successfully")
 }
 
+func GetDatabase() *gorm.DB {
+	return DB
+}
+
 func getEnv(key, defaultValue string) string {
 	if value := os.Getenv(key); value != "" {
 		return value

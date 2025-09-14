@@ -1,6 +1,6 @@
 import axios from 'axios';
 import type { AxiosInstance } from 'axios';
-import type { LoginRequest, LoginResponse, User, DashboardStats, DaemonStats, LeaderboardEntry, Report, Punishment, ResistanceStats } from '../types';
+import type { LoginRequest, LoginResponse, User, LeaderboardEntry, Report, Punishment, ResistanceStats, DashboardResponse, DaemonDashboardResponse } from '../types';
 
 class ApiService {
   private api: AxiosInstance;
@@ -27,6 +27,8 @@ class ApiService {
     // Backend returns { success: true, message: string, data: { token: string, user: User } }
     if (response.data.success && response.data.data) {
       return {
+        success: true,
+        message: response.data.message,
         token: response.data.data.token,
         user: response.data.data.user
       };
@@ -43,7 +45,7 @@ class ApiService {
     throw new Error(response.data.message || 'Failed to get profile');
   }
 
-  async getAndreiDashboard(): Promise<DashboardStats> {
+  async getAndreiDashboard(): Promise<DashboardResponse> {
     const response = await this.api.get('/dashboard/andrei');
     if (response.data.success && response.data.data) {
       return response.data.data;
@@ -51,7 +53,7 @@ class ApiService {
     throw new Error(response.data.message || 'Failed to get dashboard data');
   }
 
-  async getDaemonDashboard(): Promise<DaemonStats> {
+  async getDaemonDashboard(): Promise<DaemonDashboardResponse> {
     const response = await this.api.get('/dashboard/daemon');
     if (response.data.success && response.data.data) {
       return response.data.data;
@@ -77,8 +79,8 @@ class ApiService {
 
   async getNetworkAdminsForCapture(): Promise<User[]> {
     try {
-      // Try to get users with role filter for network admins
-      const response = await this.api.get('/users?role=network_admin');
+      // Use the specific endpoint for getting capturable network admins
+      const response = await this.api.get('/network-admins/capture');
       if (response.data.success && response.data.data) {
         return response.data.data;
       }
@@ -86,7 +88,7 @@ class ApiService {
     } catch (error: any) {
       if (error.response?.status === 403) {
         // If access is denied, return an empty array or handle differently
-        console.warn('Access denied to users endpoint, returning empty target list');
+        console.warn('Access denied to network admins endpoint, returning empty target list');
         return [];
       }
       throw error;

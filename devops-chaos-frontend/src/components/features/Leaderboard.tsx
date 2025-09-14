@@ -30,7 +30,7 @@ const Leaderboard: React.FC = () => {
     if (sortBy === 'points') {
       return b.points - a.points;
     } else {
-      return b.captures - a.captures;
+      return b.captures_count - a.captures_count;
     }
   });
 
@@ -106,7 +106,7 @@ const Leaderboard: React.FC = () => {
         </div>
         <div className="stat-card">
           <span className="stat-number text-cyan">
-            {Math.max(...leaderboard.map(d => d.captures), 0)}
+            {Math.max(...leaderboard.map(d => d.captures_count), 0)}
           </span>
           <span className="stat-label">Most Captures</span>
         </div>
@@ -187,10 +187,10 @@ const Leaderboard: React.FC = () => {
                       
                       <div className="text-right">
                         <div className="text-primary font-bold text-lg">
-                          {sortBy === 'points' ? `${daemon.points} pts` : `${daemon.captures} captures`}
+                          {sortBy === 'points' ? `${daemon.points} pts` : `${daemon.captures_count} captures`}
                         </div>
                         <div className="text-muted text-sm">
-                          {sortBy === 'points' ? `${daemon.captures} captures` : `${daemon.points} points`}
+                          {sortBy === 'points' ? `${daemon.captures_count} captures` : `${daemon.points} points`}
                         </div>
                       </div>
                     </div>
@@ -232,8 +232,8 @@ const Leaderboard: React.FC = () => {
                     <div>USERNAME: {selectedDaemon.username.toUpperCase()}</div>
                     <div>RANK: #{sortedLeaderboard.findIndex(d => d.id === selectedDaemon.id) + 1}</div>
                     <div>TOTAL_POINTS: {selectedDaemon.points}</div>
-                    <div>CAPTURES: {selectedDaemon.captures}</div>
-                    <div>EFFICIENCY: {selectedDaemon.captures > 0 ? Math.round(selectedDaemon.points / selectedDaemon.captures) : 0} pts/capture</div>
+                    <div>CAPTURES: {selectedDaemon.captures_count}</div>
+                    <div>EFFICIENCY: {selectedDaemon.captures_count > 0 ? Math.round(selectedDaemon.points / selectedDaemon.captures_count) : 0} pts/capture</div>
                     <div>STATUS: ACTIVE</div>
                   </div>
                 </div>
@@ -244,7 +244,7 @@ const Leaderboard: React.FC = () => {
                     <span className="stat-label">Total Points</span>
                   </div>
                   <div className="stat-card">
-                    <span className="stat-number text-cyan">{selectedDaemon.captures}</span>
+                    <span className="stat-number text-cyan">{selectedDaemon.captures_count}</span>
                     <span className="stat-label">Captures</span>
                   </div>
                 </div>
@@ -271,7 +271,7 @@ const Leaderboard: React.FC = () => {
                   <div>TOTAL_DAEMONS: {leaderboard.length}</div>
                   <div>AVG_SCORE: {Math.round(leaderboard.reduce((sum, d) => sum + d.points, 0) / leaderboard.length || 0)}</div>
                   <div>TOP_PERFORMER: {sortedLeaderboard[0]?.username.toUpperCase() || 'NONE'}</div>
-                  <div>TOTAL_CAPTURES: {leaderboard.reduce((sum, d) => sum + d.captures, 0)}</div>
+                  <div>TOTAL_CAPTURES: {leaderboard.reduce((sum, d) => sum + d.captures_count, 0)}</div>
                   <div>COMPETITION_LEVEL: {leaderboard.length > 10 ? 'HIGH' : leaderboard.length > 5 ? 'MODERATE' : 'LOW'}</div>
                   <div>LAST_UPDATE: {new Date().toLocaleString()}</div>
                 </div>

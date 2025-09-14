@@ -221,7 +221,7 @@ const ReportsManagement: React.FC = () => {
                       <div className="flex justify-between items-center mt-2">
                         <span className="text-muted text-xs">ID: #{report.id}</span>
                         <span className="text-muted text-xs">
-                          {report.createdAt ? new Date(report.createdAt).toLocaleDateString() : 'Unknown date'}
+                          {report.created_at ? new Date(report.created_at).toLocaleDateString() : 'Unknown date'}
                         </span>
                       </div>
                     </div>
@@ -332,9 +332,9 @@ const ReportsManagement: React.FC = () => {
                   <div className="text-green-400 text-sm space-y-1">
                     <div>REPORT_ID: {selectedReport.id}</div>
                     <div>STATUS: {selectedReport.status.toUpperCase()}</div>
-                    <div>CREATED: {selectedReport.createdAt ? new Date(selectedReport.createdAt).toLocaleString() : 'Unknown'}</div>
+                    <div>CREATED: {selectedReport.created_at ? new Date(selectedReport.created_at).toLocaleString() : 'Unknown'}</div>
                     <div>TYPE: {selectedReport.type?.toUpperCase() || 'UNKNOWN'}</div>
-                    <div>AUTHOR: {selectedReport.author?.username || 'CLASSIFIED'}</div>
+                    <div>AUTHOR: {typeof selectedReport.author === 'string' ? selectedReport.author : 'CLASSIFIED'}</div>
                   </div>
                 </div>
 

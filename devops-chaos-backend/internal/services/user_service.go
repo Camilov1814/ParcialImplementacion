@@ -6,17 +6,20 @@ import (
 	"devops-chaos-backend/internal/models"
 	"errors"
 	"math"
+	"time"
 )
 
 type UserService struct {
 	userDAO      *dao.UserDAO
 	statisticDAO *dao.StatisticDAO
+	captureDAO   *dao.CaptureDAO
 }
 
 func NewUserService() *UserService {
 	return &UserService{
 		userDAO:      dao.NewUserDAO(),
 		statisticDAO: dao.NewStatisticDAO(),
+		captureDAO:   dao.NewCaptureDAO(),
 	}
 }
 
@@ -218,9 +221,29 @@ func (s *UserService) CaptureNetworkAdmin(targetID uint, daemonID uint, daemonRo
 		return errors.New("network admin is already captured")
 	}
 
+	// Calcular dificultad y puntos basado en el ID del target
+	difficulty := s.calculateCaptureDifficulty(targetID)
+	points := s.calculateCapturePoints(difficulty)
+
 	// Actualizar status del network admin
 	target.Status = models.StatusCaptured
 	err = s.userDAO.Update(target)
+	if err != nil {
+		return err
+	}
+
+	// Crear registro de captura
+	capture := &models.Capture{
+		DaemonID:    daemonID,
+		TargetID:    targetID,
+		CaptureDate: time.Now(),
+		Status:      models.CaptureStatusCaptured,
+		Method:      "network_infiltration",
+		Points:      points,
+		Difficulty:  difficulty,
+	}
+
+	err = s.captureDAO.Create(capture)
 	if err != nil {
 		return err
 	}
@@ -232,10 +255,86 @@ func (s *UserService) CaptureNetworkAdmin(targetID uint, daemonID uint, daemonRo
 	}
 
 	// Dar puntos al daemon
-	err = s.statisticDAO.AddPoints(daemonID, 10) // 10 puntos por captura
+	err = s.statisticDAO.AddPoints(daemonID, points)
 	if err != nil {
 		// Log error pero no fallar la operación
 	}
 
 	return nil
+}
+
+// Función auxiliar para calcular la dificultad de captura
+func (s *UserService) calculateCaptureDifficulty(targetID uint) string {
+	// Simulamos dificultad basada en el ID
+	difficulty := (targetID % 3) + 1
+	switch difficulty {
+	case 1:
+		return models.CaptureDifficultyEasy
+	case 2:
+		return models.CaptureDifficultyMedium
+	case 3:
+		return models.CaptureDifficultyHard
+	default:
+		return models.CaptureDifficultyMedium
+	}
+}
+
+// Función auxiliar para calcular los puntos de captura
+func (s *UserService) calculateCapturePoints(difficulty string) int {
+	switch difficulty {
+	case models.CaptureDifficultyEasy:
+		return 100
+	case models.CaptureDifficultyMedium:
+		return 250
+	case models.CaptureDifficultyHard:
+		return 500
+	default:
+		return 100
+	}
+}
+
+// Obtener capturas de un daemon
+func (s *UserService) GetDaemonCaptures(daemonID uint, currentUserRole string, currentUserID uint) ([]models.Capture, error) {
+	// Los daemons solo pueden ver sus propias capturas, Andrei puede ver todas
+	if currentUserRole == models.RoleDaemon && currentUserID != daemonID {
+		return nil, errors.New("unauthorized: can only view your own captures")
+	}
+
+	if currentUserRole != models.RoleDaemon && currentUserRole != models.RoleAndrei {
+		return nil, errors.New("unauthorized: only daemons and Andrei can view captures")
+	}
+
+	return s.captureDAO.FindByDaemonID(daemonID)
+}
+
+// Obtener todas las capturas (solo Andrei)
+func (s *UserService) GetAllCaptures(currentUserRole string) ([]models.Capture, error) {
+	if currentUserRole != models.RoleAndrei {
+		return nil, errors.New("unauthorized: only Andrei can view all captures")
+	}
+
+	return s.captureDAO.FindAll()
+}
+
+// Obtener network admins disponibles para captura (para Daemons)
+func (s *UserService) GetNetworkAdminsForCapture(currentUserRole string) ([]models.User, error) {
+	if currentUserRole != models.RoleDaemon {
+		return nil, errors.New("unauthorized: only daemons can view capture targets")
+	}
+
+	// Obtener todos los network admins activos (no capturados)
+	users, _, err := s.userDAO.FindByRole(models.RoleNetworkAdmin, 1, 100)
+	if err != nil {
+		return nil, err
+	}
+
+	// Filtrar solo los que están activos (no capturados)
+	var availableAdmins []models.User
+	for _, user := range users {
+		if user.Status == models.StatusActive {
+			availableAdmins = append(availableAdmins, user)
+		}
+	}
+
+	return availableAdmins, nil
 }
