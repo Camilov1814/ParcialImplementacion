@@ -1,0 +1,12 @@
+.git
+.gitignore
+README.md
+Dockerfile
+.dockerignore
+.env.example
+coverage.txt
+*.test
+.vscode
+.idea
+tmp/
+vendor/

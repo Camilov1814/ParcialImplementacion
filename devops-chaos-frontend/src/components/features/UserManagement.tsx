@@ -7,7 +7,6 @@ const UserManagement: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [actionLoading, setActionLoading] = useState<number | null>(null);
 
   useEffect(() => {
     fetchUsers();
@@ -24,17 +23,6 @@ const UserManagement: React.FC = () => {
     }
   };
 
-  const handleCaptureUser = async (userId: number) => {
-    setActionLoading(userId);
-    try {
-      await apiService.captureNetworkAdmin(userId);
-      await fetchUsers(); // Refresh the list
-    } catch (err: any) {
-      setError(err.message || 'Failed to capture user');
-    } finally {
-      setActionLoading(null);
-    }
-  };
 
   const getRoleColor = (role: string) => {
     switch (role) {
@@ -143,19 +131,6 @@ const UserManagement: React.FC = () => {
                   </div>
                   
                   <div className="flex flex-col space-y-2 ml-4">
-                    {user.role === 'network_admin' && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleCaptureUser(user.id);
-                        }}
-                        disabled={actionLoading === user.id}
-                        className="btn btn-danger text-sm"
-                      >
-                        {actionLoading === user.id ? 'CAPTURING...' : '🎯 CAPTURE'}
-                      </button>
-                    )}
-                    
                     <button
                       onClick={(e) => {
                         e.stopPropagation();

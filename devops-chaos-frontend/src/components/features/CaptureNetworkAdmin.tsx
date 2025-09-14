@@ -343,23 +343,6 @@ const CaptureNetworkAdmin: React.FC = () => {
         </div>
       </div>
 
-      <div className="card mt-6">
-        <h2 className="text-cyan mb-4">⚡ CAPTURE OPERATIONS</h2>
-        <div className="grid grid-4 gap-4">
-          <button className="btn" onClick={fetchNetworkAdmins}>
-            🔄 REFRESH TARGETS
-          </button>
-          <button className="btn btn-secondary">
-            📡 STEALTH SCAN
-          </button>
-          <button className="btn">
-            📊 VIEW STATISTICS
-          </button>
-          <button className="btn btn-danger">
-            💀 MASS CAPTURE
-          </button>
-        </div>
-      </div>
     </div>
   );
 };

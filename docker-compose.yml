@@ -1,0 +1,74 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: devops-chaos-db
+    environment:
+      POSTGRES_DB: devops_chaos
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - devops-chaos-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend Service
+  backend:
+    build:
+      context: ./devops-chaos-backend
+      dockerfile: Dockerfile
+    container_name: devops-chaos-backend
+    environment:
+      - DATABASE_URL=postgres://postgres:password123@postgres:5432/devops_chaos?sslmode=disable
+      - JWT_SECRET=your_jwt_secret_key_here
+      - GIN_MODE=release
+      - PORT=8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - devops-chaos-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/api/users"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Frontend Service
+  frontend:
+    build:
+      context: ./devops-chaos-frontend
+      dockerfile: Dockerfile
+    container_name: devops-chaos-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - devops-chaos-network
+    restart: unless-stopped
+    environment:
+      - REACT_APP_API_URL=http://localhost:8080
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  postgres_data:
+
+networks:
+  devops-chaos-network:
+    driver: bridge
